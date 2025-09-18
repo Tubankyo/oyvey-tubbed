@@ -7,13 +7,12 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.AxeItem;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
 
 public class ShieldBreaker extends Module {
+
     public ShieldBreaker() {
-        super("ShieldBreaker", "Description here", Category.COMBAT, true, false, false);
+        super("ShieldBreaker", "Automatically breaks opponents' shields when key is pressed", Category.COMBAT, true, false, false);
     }
-}
 
     @Subscribe
     private void onPacketSend(PacketEvent.Send event) {
@@ -26,7 +25,6 @@ public class ShieldBreaker extends Module {
         for (Entity entity : mc.world.getEntities()) {
             if (!(entity instanceof PlayerEntity player) || player == mc.player) continue;
 
-            
             if (player.getMainHandStack().getItem().getName().getString().toLowerCase().contains("shield")) {
                 double distanceSq = mc.player.squaredDistanceTo(player);
                 if (distanceSq <= range * range) {
@@ -52,11 +50,11 @@ public class ShieldBreaker extends Module {
         int oldSlot = mc.player.getInventory().selectedSlot;
         mc.player.getInventory().selectedSlot = axeSlot;
 
-    
+        
         mc.interactionManager.attackEntity(mc.player, target);
         mc.player.swingHand(mc.player.getActiveHand());
 
-    
+        
         mc.player.getInventory().selectedSlot = oldSlot;
     }
 
@@ -65,3 +63,4 @@ public class ShieldBreaker extends Module {
         return "Auto";
     }
 }
+
