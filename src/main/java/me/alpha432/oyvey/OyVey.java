@@ -1,7 +1,6 @@
 package me.alpha432.oyvey;
 
 import me.alpha432.oyvey.manager.*;
-import me.alpha432.oyvey.features.modules.combat.ShieldBreaker; // added import
 import me.alpha432.oyvey.util.TextUtil;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
@@ -30,7 +29,7 @@ public class OyVey implements ModInitializer, ClientModInitializer {
 
     @Override
     public void onInitialize() {
-        // Initialize all managers
+        // Initialize core managers
         eventManager = new EventManager();
         serverManager = new ServerManager();
         rotationManager = new RotationManager();
@@ -43,17 +42,18 @@ public class OyVey implements ModInitializer, ClientModInitializer {
         holeManager = new HoleManager();
 
         TextUtil.init();
-
-        // Initialize modules and register ShieldBreaker
-        moduleManager.init();
-        moduleManager.getModules().add(new ShieldBreaker()); // <-- Add ShieldBreaker here
     }
 
     @Override
     public void onInitializeClient() {
+        // Load events & modules
         eventManager.init();
-        moduleManager.init(); // load all modules
+        moduleManager.init();   // <-- registers all modules, including ShieldBreaker (added inside ModuleManager)
 
+        // Debug check: confirm modules loaded
+        LOGGER.info("Modules loaded: {}", moduleManager.getModules().size());
+
+        // Config + color manager
         configManager = new ConfigManager();
         configManager.load();
         colorManager.init();
