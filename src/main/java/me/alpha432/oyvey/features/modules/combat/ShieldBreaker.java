@@ -22,11 +22,11 @@ public class ShieldBreaker extends Module {
         PlayerEntity target = null;
         double range = 5.0;
 
-        // Find nearest shielded player
+        
         for (Entity entity : mc.world.getEntities()) {
             if (!(entity instanceof PlayerEntity player) || player == mc.player) continue;
 
-            // Check if player is holding a shield in main hand
+            
             if (player.getMainHandStack().getItem().getName().getString().toLowerCase().contains("shield")) {
                 double distanceSq = mc.player.squaredDistanceTo(player);
                 if (distanceSq <= range * range) {
@@ -38,7 +38,7 @@ public class ShieldBreaker extends Module {
 
         if (target == null) return;
 
-        // Find axe in hotbar
+        
         int axeSlot = -1;
         for (int i = 0; i < 9; i++) {
             ItemStack stack = mc.player.getInventory().getStack(i);
@@ -52,11 +52,11 @@ public class ShieldBreaker extends Module {
         int oldSlot = mc.player.getInventory().selectedSlot;
         mc.player.getInventory().selectedSlot = axeSlot;
 
-        // Attack target (uses built-in attack method instead of broken packet)
+    
         mc.interactionManager.attackEntity(mc.player, target);
         mc.player.swingHand(mc.player.getActiveHand());
 
-        // Switch back
+    
         mc.player.getInventory().selectedSlot = oldSlot;
     }
 
