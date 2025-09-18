@@ -9,11 +9,10 @@ import net.minecraft.item.AxeItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
 
-public class ShieldBreaker extends Module {
-
-    public ShieldBreaker() {
-        super("ShieldBreaker", "Automatically breaks opponents' shields", Category.COMBAT, true, false, false);
-    }
+public ShieldBreaker() {
+    super("ShieldBreaker", "Automatically breaks opponents' shields when key is pressed", Category.COMBAT, true, false, false);
+    System.out.println("ShieldBreaker loaded!");
+}
 
     @Subscribe
     private void onPacketSend(PacketEvent.Send event) {
