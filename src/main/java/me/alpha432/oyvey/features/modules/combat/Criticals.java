@@ -4,68 +4,35 @@ import com.google.common.eventbus.Subscribe;
 import me.alpha432.oyvey.event.impl.PacketEvent;
 import me.alpha432.oyvey.features.modules.Module;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.AxeItem;
-import net.minecraft.item.ItemStack;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.decoration.EndCrystalEntity;
 import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
-import org.lwjgl.glfw.GLFW;
+import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 
-public class ShieldBreaker extends Module {
-
-    public ShieldBreaker() {
-        super("ShieldBreaker", "Automatically breaks opponents' shields when key is pressed", Category.COMBAT, true, false, false);
+public class Criticals extends Module {
+    public Criticals() {
+        super("Criticals", "Makes you do critical hits", Category.COMBAT, true, false, false);
     }
 
     @Subscribe
     private void onPacketSend(PacketEvent.Send event) {
-        if (mc.player == null || mc.world == null) return;
+        if (event.getPacket() instanceof PlayerInteractEntityC2SPacket packet && packet.type.getType() == PlayerInteractEntityC2SPacket.InteractType.ATTACK) {
+            Entity entity = mc.world.getEntityById(packet.entityId);
+            if (entity == null
+                    || entity instanceof EndCrystalEntity
+                    || !mc.player.isOnGround()
+                    || !(entity instanceof LivingEntity)) return;
 
-        // Only activate if B is pressed
-        if (!OyVey.keyManager.isKeyDown(GLFW.GLFW_KEY_B)) return;
-
-        PlayerEntity target = null;
-        double range = 5.0;
-
-        // Find nearest shielded player
-        for (Entity entity : mc.world.getEntities()) {
-            if (!(entity instanceof PlayerEntity player) || player == mc.player) continue;
-
-            if (player.getMainHandStack().getItem().getName().getString().toLowerCase().contains("shield")) {
-                double distanceSq = mc.player.squaredDistanceTo(player);
-                if (distanceSq <= range * range) {
-                    target = player;
-                    break;
-                }
-            }
+            boolean bl = mc.player.horizontalCollision;
+            mc.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(mc.player.getX(), mc.player.getY() + 0.1f, mc.player.getZ(), false, bl));
+            mc.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(mc.player.getX(), mc.player.getY(), mc.player.getZ(), false, bl));
+            mc.player.addCritParticles(entity);
         }
-
-        if (target == null) return;
-
-        // Find axe in hotbar
-        int axeSlot = -1;
-        for (int i = 0; i < 9; i++) {
-            ItemStack stack = mc.player.getInventory().getStack(i);
-            if (stack.getItem() instanceof AxeItem) {
-                axeSlot = i;
-                break;
-            }
-        }
-        if (axeSlot == -1) return;
-
-        int oldSlot = mc.player.getInventory().selectedSlot;
-        mc.player.getInventory().selectedSlot = axeSlot;
-
-        // Send attack packet
-        mc.player.networkHandler.sendPacket(
-                new PlayerInteractEntityC2SPacket(mc.player, target, PlayerInteractEntityC2SPacket.InteractType.ATTACK)
-        );
-
-        // Switch back to original slot
-        mc.player.getInventory().selectedSlot = oldSlot;
     }
 
     @Override
     public String getDisplayInfo() {
-        return "Key B";
+        return "Packet";
     }
 }
+
