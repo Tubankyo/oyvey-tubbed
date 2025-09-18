@@ -13,32 +13,25 @@ import org.lwjgl.glfw.GLFW;
 
 public class ShieldBreaker extends Module {
 
-    // Keybind setting (default: B key)
     public final Setting<Integer> key = register(new Setting<>("Key", GLFW.GLFW_KEY_B));
-
-    // Max distance to target enemies
     public final Setting<Double> range = register(new Setting<>("Range", 5.0, 1.0, 10.0));
 
     private PlayerEntity currentTarget = null;
 
     public ShieldBreaker() {
         super("ShieldBreaker", "Automatically breaks opponents' shields when key is pressed", Category.COMBAT, true, false, false);
-        // No manual registration needed, ModuleManager will scan this class automatically
     }
 
     @Subscribe
-    public void onPacketSend(PacketEvent.Send event) {
+    private void onPacketSend(PacketEvent.Send event) {
         if (mc.player == null || mc.world == null) return;
 
-        // Only run if key is pressed
+        // Only activate if the key is pressed
         if (!OyVey.keyManager.isKeyDown(key.getValue())) return;
 
         // Find nearest shielded player
         currentTarget = findNearestShieldedPlayer();
         if (currentTarget == null) return;
-
-        // Save current hotbar slot
-        int oldSlot = mc.player.getInventory().selectedSlot;
 
         // Find an axe in hotbar
         int axeSlot = -1;
@@ -49,32 +42,34 @@ public class ShieldBreaker extends Module {
                 break;
             }
         }
-
         if (axeSlot == -1) return; // No axe found
 
-        // Switch to axe
+        // Save current slot and switch to axe
+        int oldSlot = mc.player.getInventory().selectedSlot;
         mc.player.getInventory().selectedSlot = axeSlot;
 
-        // Send attack packet to break shield
-        mc.player.networkHandler.sendPacket(new PlayerInteractEntityC2SPacket(mc.player, currentTarget, PlayerInteractEntityC2SPacket.InteractType.ATTACK));
+        // Send attack packet
+        mc.player.networkHandler.sendPacket(
+                new PlayerInteractEntityC2SPacket(mc.player, currentTarget, PlayerInteractEntityC2SPacket.InteractType.ATTACK)
+        );
 
-        // Switch back to original item
+        // Switch back to original slot
         mc.player.getInventory().selectedSlot = oldSlot;
     }
 
     private PlayerEntity findNearestShieldedPlayer() {
         PlayerEntity nearest = null;
-        double nearestDistance = range.getValue() * range.getValue();
+        double nearestDistanceSq = range.getValue() * range.getValue();
 
         for (Entity entity : mc.world.getEntities()) {
             if (!(entity instanceof PlayerEntity player) || player == mc.player) continue;
 
             // Check if player has shield in main hand
             if (player.getMainHandStack().getItem().getName().getString().toLowerCase().contains("shield")) {
-                double distance = mc.player.squaredDistanceTo(player);
-                if (distance <= nearestDistance) {
+                double distanceSq = mc.player.squaredDistanceTo(player);
+                if (distanceSq <= nearestDistanceSq) {
                     nearest = player;
-                    nearestDistance = distance;
+                    nearestDistanceSq = distanceSq;
                 }
             }
         }
