@@ -1,7 +1,6 @@
 package me.alpha432.oyvey.features.modules.combat;
 
 import com.google.common.eventbus.Subscribe;
-import me.alpha432.oyvey.OyVey;
 import me.alpha432.oyvey.event.impl.PacketEvent;
 import me.alpha432.oyvey.features.modules.Module;
 import me.alpha432.oyvey.features.setting.Setting;
@@ -14,12 +13,6 @@ import org.lwjgl.glfw.GLFW;
 
 public class ShieldBreaker extends Module {
 
-    public ShieldBreaker() {
-        super("ShieldBreaker", "Automatically breaks opponents' shields when key is pressed", Category.COMBAT, true, false, false);
-        // Ensure module is registered in ModuleManager (usually done in client init)
-        OyVey.moduleManager.register(this);
-    }
-
     // Keybind setting (default: B key)
     public final Setting<Integer> key = register(new Setting<>("Key", GLFW.GLFW_KEY_B));
 
@@ -28,8 +21,15 @@ public class ShieldBreaker extends Module {
 
     private PlayerEntity currentTarget = null;
 
+    public ShieldBreaker() {
+        super("ShieldBreaker", "Automatically breaks opponents' shields when key is pressed", Category.COMBAT, true, false, false);
+        // No manual registration needed, ModuleManager will scan this class automatically
+    }
+
     @Subscribe
-    private void onPacketSend(PacketEvent.Send event) {
+    public void onPacketSend(PacketEvent.Send event) {
+        if (mc.player == null || mc.world == null) return;
+
         // Only run if key is pressed
         if (!OyVey.keyManager.isKeyDown(key.getValue())) return;
 
@@ -64,7 +64,7 @@ public class ShieldBreaker extends Module {
 
     private PlayerEntity findNearestShieldedPlayer() {
         PlayerEntity nearest = null;
-        double nearestDistance = range.getValue();
+        double nearestDistance = range.getValue() * range.getValue();
 
         for (Entity entity : mc.world.getEntities()) {
             if (!(entity instanceof PlayerEntity player) || player == mc.player) continue;
@@ -72,9 +72,9 @@ public class ShieldBreaker extends Module {
             // Check if player has shield in main hand
             if (player.getMainHandStack().getItem().getName().getString().toLowerCase().contains("shield")) {
                 double distance = mc.player.squaredDistanceTo(player);
-                if (distance <= nearestDistance * nearestDistance) {
+                if (distance <= nearestDistance) {
                     nearest = player;
-                    nearestDistance = Math.sqrt(distance);
+                    nearestDistance = distance;
                 }
             }
         }
@@ -83,10 +83,9 @@ public class ShieldBreaker extends Module {
 
     @Override
     public String getDisplayInfo() {
-        // Always return a string so navigator shows it
         if (currentTarget != null) {
             return "Target: " + currentTarget.getEntityName();
         }
-        return "Key: " + (key.getValue() != 0 ? GLFW.glfwGetKeyName(key.getValue(), 0) : "None");
+        return key.getValue() != 0 ? GLFW.glfwGetKeyName(key.getValue(), 0) : "None";
     }
 }
