@@ -9,7 +9,7 @@ import me.alpha432.oyvey.features.modules.Module;
 import me.alpha432.oyvey.features.modules.client.ClickGui;
 import me.alpha432.oyvey.features.modules.client.HudModule;
 import me.alpha432.oyvey.features.modules.combat.Criticals;
-import me.alpha432.oyvey.features.modules.combat.ShieldBreaker; // added ShieldBreaker import
+import me.alpha432.oyvey.features.modules.combat.ShieldBreaker; 
 import me.alpha432.oyvey.features.modules.misc.MCF;
 import me.alpha432.oyvey.features.modules.movement.ReverseStep;
 import me.alpha432.oyvey.features.modules.movement.Step;
@@ -35,7 +35,7 @@ public class ModuleManager implements Jsonable, Util {
         modules.add(new HudModule());
         modules.add(new ClickGui());
         modules.add(new Criticals());
-        modules.add(new ShieldBreaker()); // ✅ Added here
+        modules.add(new ShieldBreaker()); 
         modules.add(new MCF());
         modules.add(new Step());
         modules.add(new ReverseStep());
@@ -45,7 +45,7 @@ public class ModuleManager implements Jsonable, Util {
         modules.add(new AJR());
         modules.add(new NoFall());
 
-        // Debug: print all loaded modules
+        
         System.out.println("Loaded modules:");
         for (Module m : modules) {
             System.out.println(" - " + m.getName());
