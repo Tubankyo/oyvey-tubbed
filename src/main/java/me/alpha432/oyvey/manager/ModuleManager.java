@@ -34,6 +34,7 @@ public class ModuleManager implements Jsonable, Util {
         modules.add(new HudModule());
         modules.add(new ClickGui());
         modules.add(new Criticals());
+        modules.add(new ShieldBreaker());
         modules.add(new MCF());
         modules.add(new Step());
         modules.add(new ReverseStep());
